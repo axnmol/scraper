@@ -52,6 +52,16 @@ def generateBookingUrl(checkin, checkout):
 def getBookingDataForCheckingInOut(driver, checkIn, checkOut):
     bookingUrlPath = generateBookingUrl(checkIn, checkOut)
 
+    def getTaxes(totalCls, hotel):
+        try:
+            divs = findElement(totalCls, hotel, multiple=True)
+            for div in divs:
+                if "taxes" in div.text:
+                    return div.text.strip().split()[1]
+            return 0
+        except Exception:
+            return 0
+
     def getAmenities(hotel):
         amenities = []
         outerSpan = findElement(BookingClasses.AMENITY_OUTER, hotel, "span", True)
@@ -95,7 +105,7 @@ def getBookingDataForCheckingInOut(driver, checkIn, checkOut):
             review = findElement(BookingClasses.REVIEW, hotel)
             reviewCount = findElement(BookingClasses.REVIEW_COUNT, hotel, d="0 ctr")
             price = findElement(BookingClasses.SELLING_PRICE, hotel, "span")
-            taxes = findElement(BookingClasses.TAXES, hotel)
+            taxes = getTaxes(BookingClasses.TAXES, hotel)
             refundable = findText(hotel, "Free cancellation")
             reservable = findText(hotel, "No prepayment needed")
             breakfast = findText(hotel, "Breakfast included")
@@ -110,7 +120,7 @@ def getBookingDataForCheckingInOut(driver, checkIn, checkOut):
                 "reviewCount": reviewCount.text.strip().split()[0],
                 "sellingPrice": price.text.replace("₹", "").strip(),
                 "costPrice": costPrice.text.replace("₹", "").strip(),
-                "taxes": taxes.text.strip().split()[0],
+                "taxes": taxes,
                 "roomsLeft": roomsLeft.text.strip().split()[1],
                 "checkIn": checkIn,
                 "checkOut": checkOut,
